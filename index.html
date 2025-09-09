@@ -415,120 +415,18 @@
 
         // Función para obtener precios P2P desde Binance
         async function fetchP2PPrices() {
-            try {
-                console.log('Obteniendo precios P2P reales de Binance...');
-                
-                // Intentar primero con la API pública de Binance para VES pairs
-                await fetchVESPricesFromPublicAPI();
-                
-                // Si no se obtuvieron precios, intentar con P2P API usando proxy CORS
-                const cryptoList = ['BTC', 'BNB', 'ETH', 'USDC'];
-                const promises = cryptoList.map(crypto => fetchP2PPriceForCrypto(crypto));
-                await Promise.all(promises);
-                
-                // Si no se obtuvieron precios reales, usar precios de ejemplo
-                if (Object.values(p2pPricesVES).every(price => price === 0)) {
-                    console.log('Usando precios de ejemplo debido a problemas de CORS...');
-                    setExamplePrices();
-                }
-                
-                console.log('Precios P2P obtenidos de Binance:', p2pPricesVES);
-                updateP2PInputs();
-                updateVESPriceDisplay();
-                calculateRates();
-            } catch (error) {
-                console.error('Error fetching P2P prices:', error);
-                console.log('Usando precios de ejemplo...');
-                setExamplePrices();
-                updateP2PInputs();
-                updateVESPriceDisplay();
-                calculateRates();
-            }
+            console.log('Debido a restricciones de CORS de Binance, los precios P2P deben ingresarse manualmente');
+            
+            // Mostrar mensaje informativo y no intentar cargar precios automáticamente
+            showP2PInfo();
+            
+            // Establecer precios de ejemplo para que el usuario tenga una referencia
+            setExamplePrices();
+            updateP2PInputs();
+            calculateRates();
         }
 
-        // Función alternativa para obtener precios VES desde la API pública
-        async function fetchVESPricesFromPublicAPI() {
-            try {
-                console.log('Intentando obtener precios VES desde API pública...');
-                
-                // Intentar obtener precios de pares VES si existen
-                const vesPairs = ['BTCVES', 'BNBVES', 'ETHVES', 'USDCVES'];
-                const promises = vesPairs.map(pair => 
-                    fetch(`${BINANCE_API_BASE}/ticker/price?symbol=${pair}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.price) {
-                                const crypto = pair.replace('VES', '');
-                                p2pPricesVES[crypto] = parseFloat(data.price);
-                                console.log(`Precio VES obtenido para ${crypto}: ${data.price}`);
-                            }
-                        })
-                        .catch(error => {
-                            console.log(`No se encontró par ${pair}:`, error.message);
-                        })
-                );
-                
-                await Promise.all(promises);
-            } catch (error) {
-                console.log('No se pudieron obtener precios VES desde API pública:', error);
-            }
-        }
-
-        // Función para obtener precio P2P de una criptomoneda específica
-        async function fetchP2PPriceForCrypto(crypto) {
-            try {
-                console.log(`Obteniendo precio P2P para ${crypto}...`);
-                
-                const fiat = 'VES';
-                const tradeType = 'BUY'; // Compra
-                
-                const requestBody = {
-                    asset: crypto,
-                    fiat: fiat,
-                    merchantCheck: false,
-                    page: 1,
-                    payTypes: [],
-                    publisherType: null,
-                    rows: 10,
-                    tradeType: tradeType
-                };
-
-                console.log(`Request body for ${crypto}:`, requestBody);
-
-                // Usar proxy CORS para evitar problemas de CORS
-                const proxyUrl = CORS_PROXY + encodeURIComponent(BINANCE_P2P_API);
-                
-                const response = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                console.log(`Response status for ${crypto}:`, response.status);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log(`Response data for ${crypto}:`, data);
-                
-                if (data.success && data.data && data.data.length > 0) {
-                    // Tomar el precio promedio de los primeros 5 resultados
-                    const prices = data.data.slice(0, 5).map(item => parseFloat(item.adv.price));
-                    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-                    p2pPricesVES[crypto] = avgPrice;
-                    console.log(`Precio P2P obtenido para ${crypto}: ${avgPrice} VES`);
-                } else {
-                    console.log(`No se encontraron datos P2P para ${crypto}`);
-                }
-            } catch (error) {
-                console.error(`Error fetching P2P price for ${crypto}:`, error);
-            }
-        }
+        // Función simplificada - ya no intentamos obtener precios P2P automáticamente
 
         // Función para establecer precios de ejemplo cuando falla la API
         function setExamplePrices() {
@@ -572,48 +470,8 @@
 
         // Función para actualizar la visualización de precios VES
         function updateVESPriceDisplay() {
-            const vesPriceGrid = document.getElementById('vesPriceGrid');
-            vesPriceGrid.innerHTML = '';
-
-            console.log('Actualizando VES price display...');
-            console.log('p2pPricesVES:', p2pPricesVES);
-            console.log('cryptoPricesUSD:', cryptoPricesUSD);
-
-            Object.entries(p2pPricesVES).forEach(([crypto, vesPrice]) => {
-                console.log(`Procesando ${crypto}: vesPrice=${vesPrice}, usdPrice=${cryptoPricesUSD[crypto]}`);
-                
-                if (vesPrice > 0 && cryptoPricesUSD[crypto] > 0) {
-                    const priceItem = document.createElement('div');
-                    priceItem.className = 'ves-price-item';
-                    
-                    const iconClass = crypto === 'BTC' ? 'btc-icon' : 
-                                    crypto === 'BNB' ? 'bnb-icon' : 
-                                    crypto === 'ETH' ? 'eth-icon' : 'usdc-icon';
-                    const icon = crypto === 'BTC' ? '₿' : 
-                               crypto === 'BNB' ? 'B' : 
-                               crypto === 'ETH' ? 'Ξ' : '$';
-                    
-                    // Calcular USD por VES
-                    const usdPerVes = cryptoPricesUSD[crypto] / vesPrice;
-                    
-                    priceItem.innerHTML = `
-                        <div class="crypto-icon ${iconClass}" style="margin: 0 auto 10px;">${icon}</div>
-                        <div class="price-label">${crypto} P2P</div>
-                        <div class="ves-price-value">${formatNumber(vesPrice, 0)} VES</div>
-                        <div class="usd-per-ves">$${formatNumber(usdPerVes, 6)} USD/VES</div>
-                    `;
-                    
-                    vesPriceGrid.appendChild(priceItem);
-                    console.log(`Agregado ${crypto} al display VES`);
-                } else {
-                    console.log(`Saltando ${crypto}: vesPrice=${vesPrice}, usdPrice=${cryptoPricesUSD[crypto]}`);
-                }
-            });
-
-            // Si no hay elementos, mostrar información sobre CORS
-            if (vesPriceGrid.children.length === 0) {
-                showP2PInfo();
-            }
+            // Siempre mostrar el mensaje informativo ya que no cargamos precios P2P automáticamente
+            showP2PInfo();
         }
 
         // Función para actualizar los inputs P2P con precios obtenidos
@@ -639,17 +497,27 @@
         function showP2PInfo() {
             const vesPriceGrid = document.getElementById('vesPriceGrid');
             vesPriceGrid.innerHTML = `
-                <div style="text-align: center; padding: 20px; background: rgba(255, 165, 0, 0.1); border-radius: 10px; border: 1px solid rgba(255, 165, 0, 0.3);">
-                    <h4 style="color: #ffa500; margin-bottom: 10px;">⚠️ Precios P2P no disponibles</h4>
-                    <p style="color: #888; margin-bottom: 15px;">Debido a restricciones de CORS, los precios P2P no se pueden cargar automáticamente.</p>
-                    <p style="color: #888; margin-bottom: 15px;">Puedes ingresar manualmente los precios P2P en los campos de abajo.</p>
-                    <div style="font-size: 0.9rem; color: #666;">
-                        <p><strong>Ejemplos típicos:</strong></p>
-                        <p>BTC: ~3,500,000,000 VES</p>
-                        <p>BNB: ~25,000,000 VES</p>
-                        <p>ETH: ~120,000,000 VES</p>
-                        <p>USDC: ~40 VES</p>
+                <div style="text-align: center; padding: 25px; background: rgba(255, 165, 0, 0.1); border-radius: 15px; border: 1px solid rgba(255, 165, 0, 0.3); margin-bottom: 20px;">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">⚠️</div>
+                    <h3 style="color: #ffa500; margin-bottom: 15px; font-size: 1.3rem;">Precios P2P Requieren Entrada Manual</h3>
+                    <p style="color: #888; margin-bottom: 15px; line-height: 1.5;">
+                        Debido a restricciones de seguridad de Binance (CORS), los precios P2P no se pueden cargar automáticamente desde el navegador.
+                    </p>
+                    <p style="color: #888; margin-bottom: 20px; line-height: 1.5;">
+                        <strong>Por favor, ingresa manualmente los precios P2P actuales en los campos de abajo.</strong>
+                    </p>
+                    <div style="background: rgba(0, 0, 0, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <p style="color: #ffa500; font-weight: bold; margin-bottom: 10px;">💡 Precios de Referencia Típicos:</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.9rem; color: #666;">
+                            <div>₿ BTC: ~3,500,000,000 VES</div>
+                            <div>B BNB: ~25,000,000 VES</div>
+                            <div>Ξ ETH: ~120,000,000 VES</div>
+                            <div>$ USDC: ~40 VES</div>
+                        </div>
                     </div>
+                    <p style="color: #666; font-size: 0.85rem; font-style: italic;">
+                        💡 Tip: Puedes consultar los precios P2P actuales en Binance P2P o grupos de trading locales
+                    </p>
                 </div>
             `;
         }
@@ -796,10 +664,10 @@
             refreshBtn.textContent = '🔄 Actualizando...';
             
             try {
-                await Promise.all([
-                    fetchBinancePrices(),
-                    fetchP2PPrices()
-                ]);
+                // Solo actualizar precios USD de Binance
+                await fetchBinancePrices();
+                // Los precios P2P se manejan manualmente
+                fetchP2PPrices();
             } finally {
                 refreshBtn.disabled = false;
                 refreshBtn.textContent = '🔄 Actualizar';
@@ -816,11 +684,14 @@
 
         // Inicialización al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            // Actualizar con datos reales de Binance
-            updateAllPrices();
+            // Actualizar solo precios USD de Binance
+            fetchBinancePrices();
             
-            // Actualizar precios cada 30 segundos
-            setInterval(updateAllPrices, 30000);
+            // Mostrar mensaje informativo para P2P
+            fetchP2PPrices();
+            
+            // Actualizar precios USD cada 30 segundos
+            setInterval(fetchBinancePrices, 30000);
         });
 
         // Información adicional
