@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora VES a Cripto/USD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3a7bd5;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(58, 123, 213, 0.2);
+        }
+
+        .crypto-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .crypto-input {
+            position: relative;
+        }
+
+        .crypto-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .crypto-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .btc-icon { background: #f7931a; }
+        .bnb-icon { background: #f0b90b; color: #000; }
+        .eth-icon { background: #627eea; }
+        .usdc-icon { background: #2775ca; }
+
+        .results {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-card.best {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: rgba(0, 255, 0, 0.3);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-crypto {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .detail-item {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .best-badge {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .price-display {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .price-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .ves-price-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        .ves-price-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .usd-per-ves {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+        }
+
+        .price-label {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .price-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .price-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .price-change.positive {
+            color: #00ff88;
+        }
+
+        .price-change.negative {
+            color: #ff6b6b;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(58, 123, 213, 0.3);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .crypto-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora VES → Cripto → USD</h1>
+        
+        <div class="price-display">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #00ff88;">Precios en Tiempo Real (Binance)</h3>
+                <button id="refreshPrices" class="refresh-btn">🔄 Actualizar</button>
+            </div>
+            <div class="price-grid" id="priceGrid">
+                <div class="loading">Cargando precios...</div>
+            </div>
+        </div>
+
+        <div class="price-display" style="background: rgba(255, 165, 0, 0.1); border-color: rgba(255, 165, 0, 0.3);">
+            <h3 style="margin: 0 0 15px 0; color: #ffa500;">Precios P2P en VES (Bolívares)</h3>
+            <div class="price-grid" id="vesPriceGrid">
+                <div class="loading">Cargando precios P2P...</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="vesAmount">Cantidad en Bolívares (VES)</label>
+                <input type="number" id="vesAmount" placeholder="Ej: 1000000" step="0.01">
+            </div>
+            
+            <div class="crypto-inputs">
+                <div class="crypto-input">
+                    <div class="crypto-label">
+                        <div class="crypto-icon btc-icon">₿</div>
+                        <label>Precio P2P Bitcoin (VES)</label>
+                    </div>
+                    <input type="number" id="btcPrice" placeholder="Ej: 3500000000" step="0.01">
+                </div>
+                
+                <div class="crypto-input">
+                    <div class="crypto-label">
+                        <div class="crypto-icon bnb-icon">B</div>
+                        <label>Precio P2P BNB (VES)</label>
+                    </div>
+                    <input type="number" id="bnbPrice" placeholder="Ej: 25000000" step="0.01">
+                </div>
+                
+                <div class="crypto-input">
+                    <div class="crypto-label">
+                        <div class="crypto-icon eth-icon">Ξ</div>
+                        <label>Precio P2P Ethereum (VES)</label>
+                    </div>
+                    <input type="number" id="ethPrice" placeholder="Ej: 120000000" step="0.01">
+                </div>
+                
+                <div class="crypto-input">
+                    <div class="crypto-label">
+                        <div class="crypto-icon usdc-icon">$</div>
+                        <label>Precio P2P USDC (VES)</label>
+                    </div>
+                    <input type="number" id="usdcPrice" placeholder="Ej: 40" step="0.01">
+                </div>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <p style="text-align: center; color: #888;">Ingrese los valores para calcular las tasas</p>
+        </div>
+    </div>
+
+    <script>
+        // Precios en USD de las criptomonedas (se actualizan desde Binance API)
+        let cryptoPricesUSD = {
+            BTC: 0,  // Bitcoin
+            BNB: 0,  // BNB
+            ETH: 0,  // Ethereum
+            USDC: 1  // USDC (stablecoin)
+        };
+
+        // Precios P2P en VES (se actualizan desde Binance P2P API)
+        let p2pPricesVES = {
+            BTC: 0,
+            BNB: 0,
+            ETH: 0,
+            USDC: 0
+        };
+
+        // Configuración de la API de Binance
+        const BINANCE_API_BASE = 'https://api.binance.com/api/v3';
+        const BINANCE_P2P_API = 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search';
+
+        // Función para obtener precios desde Binance API
+        async function fetchBinancePrices() {
+            try {
+                const response = await fetch(`${BINANCE_API_BASE}/ticker/price?symbols=["BTCUSDT","BNBUSDT","ETHUSDT"]`);
+                const data = await response.json();
+                
+                data.forEach(item => {
+                    const symbol = item.symbol.replace('USDT', '');
+                    cryptoPricesUSD[symbol] = parseFloat(item.price);
+                });
+                
+                console.log('Precios actualizados desde Binance:', cryptoPricesUSD);
+                updatePriceDisplay();
+                updateVESPriceDisplay();
+                calculateRates();
+            } catch (error) {
+                console.error('Error fetching Binance prices:', error);
+                showError('Error al obtener precios de Binance');
+            }
+        }
+
+        // Función para obtener precios P2P desde Binance
+        async function fetchP2PPrices() {
+            try {
+                console.log('Obteniendo precios P2P reales de Binance...');
+                
+                // Intentar primero con la API pública de Binance para VES pairs
+                await fetchVESPricesFromPublicAPI();
+                
+                // Si no se obtuvieron precios, intentar con P2P API
+                const cryptoList = ['BTC', 'BNB', 'ETH', 'USDC'];
+                const promises = cryptoList.map(crypto => fetchP2PPriceForCrypto(crypto));
+                await Promise.all(promises);
+                
+                console.log('Precios P2P obtenidos de Binance:', p2pPricesVES);
+                updateP2PInputs();
+                updateVESPriceDisplay();
+                calculateRates();
+            } catch (error) {
+                console.error('Error fetching P2P prices:', error);
+                showError('Error al obtener precios P2P de Binance');
+            }
+        }
+
+        // Función alternativa para obtener precios VES desde la API pública
+        async function fetchVESPricesFromPublicAPI() {
+            try {
+                console.log('Intentando obtener precios VES desde API pública...');
+                
+                // Intentar obtener precios de pares VES si existen
+                const vesPairs = ['BTCVES', 'BNBVES', 'ETHVES', 'USDCVES'];
+                const promises = vesPairs.map(pair => 
+                    fetch(`${BINANCE_API_BASE}/ticker/price?symbol=${pair}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.price) {
+                                const crypto = pair.replace('VES', '');
+                                p2pPricesVES[crypto] = parseFloat(data.price);
+                                console.log(`Precio VES obtenido para ${crypto}: ${data.price}`);
+                            }
+                        })
+                        .catch(error => {
+                            console.log(`No se encontró par ${pair}:`, error.message);
+                        })
+                );
+                
+                await Promise.all(promises);
+            } catch (error) {
+                console.log('No se pudieron obtener precios VES desde API pública:', error);
+            }
+        }
+
+        // Función para obtener precio P2P de una criptomoneda específica
+        async function fetchP2PPriceForCrypto(crypto) {
+            try {
+                console.log(`Obteniendo precio P2P para ${crypto}...`);
+                
+                const fiat = 'VES';
+                const tradeType = 'BUY'; // Compra
+                
+                const requestBody = {
+                    asset: crypto,
+                    fiat: fiat,
+                    merchantCheck: false,
+                    page: 1,
+                    payTypes: [],
+                    publisherType: null,
+                    rows: 10,
+                    tradeType: tradeType
+                };
+
+                console.log(`Request body for ${crypto}:`, requestBody);
+
+                const response = await fetch(BINANCE_P2P_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log(`Response status for ${crypto}:`, response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log(`Response data for ${crypto}:`, data);
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    // Tomar el precio promedio de los primeros 5 resultados
+                    const prices = data.data.slice(0, 5).map(item => parseFloat(item.adv.price));
+                    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+                    p2pPricesVES[crypto] = avgPrice;
+                    console.log(`Precio P2P obtenido para ${crypto}: ${avgPrice} VES`);
+                } else {
+                    console.log(`No se encontraron datos P2P para ${crypto}`);
+                }
+            } catch (error) {
+                console.error(`Error fetching P2P price for ${crypto}:`, error);
+            }
+        }
+
+        // Función para actualizar la visualización de precios USD
+        function updatePriceDisplay() {
+            const priceGrid = document.getElementById('priceGrid');
+            priceGrid.innerHTML = '';
+
+            Object.entries(cryptoPricesUSD).forEach(([crypto, price]) => {
+                if (price > 0) {
+                    const priceItem = document.createElement('div');
+                    priceItem.className = 'price-item';
+                    
+                    const iconClass = crypto === 'BTC' ? 'btc-icon' : 
+                                    crypto === 'BNB' ? 'bnb-icon' : 
+                                    crypto === 'ETH' ? 'eth-icon' : 'usdc-icon';
+                    const icon = crypto === 'BTC' ? '₿' : 
+                               crypto === 'BNB' ? 'B' : 
+                               crypto === 'ETH' ? 'Ξ' : '$';
+                    
+                    priceItem.innerHTML = `
+                        <div class="crypto-icon ${iconClass}" style="margin: 0 auto 10px;">${icon}</div>
+                        <div class="price-label">${crypto}</div>
+                        <div class="price-value">$${formatNumber(price, 2)}</div>
+                    `;
+                    
+                    priceGrid.appendChild(priceItem);
+                }
+            });
+        }
+
+        // Función para actualizar la visualización de precios VES
+        function updateVESPriceDisplay() {
+            const vesPriceGrid = document.getElementById('vesPriceGrid');
+            vesPriceGrid.innerHTML = '';
+
+            console.log('Actualizando VES price display...');
+            console.log('p2pPricesVES:', p2pPricesVES);
+            console.log('cryptoPricesUSD:', cryptoPricesUSD);
+
+            Object.entries(p2pPricesVES).forEach(([crypto, vesPrice]) => {
+                console.log(`Procesando ${crypto}: vesPrice=${vesPrice}, usdPrice=${cryptoPricesUSD[crypto]}`);
+                
+                if (vesPrice > 0 && cryptoPricesUSD[crypto] > 0) {
+                    const priceItem = document.createElement('div');
+                    priceItem.className = 'ves-price-item';
+                    
+                    const iconClass = crypto === 'BTC' ? 'btc-icon' : 
+                                    crypto === 'BNB' ? 'bnb-icon' : 
+                                    crypto === 'ETH' ? 'eth-icon' : 'usdc-icon';
+                    const icon = crypto === 'BTC' ? '₿' : 
+                               crypto === 'BNB' ? 'B' : 
+                               crypto === 'ETH' ? 'Ξ' : '$';
+                    
+                    // Calcular USD por VES
+                    const usdPerVes = cryptoPricesUSD[crypto] / vesPrice;
+                    
+                    priceItem.innerHTML = `
+                        <div class="crypto-icon ${iconClass}" style="margin: 0 auto 10px;">${icon}</div>
+                        <div class="price-label">${crypto} P2P</div>
+                        <div class="ves-price-value">${formatNumber(vesPrice, 0)} VES</div>
+                        <div class="usd-per-ves">$${formatNumber(usdPerVes, 6)} USD/VES</div>
+                    `;
+                    
+                    vesPriceGrid.appendChild(priceItem);
+                    console.log(`Agregado ${crypto} al display VES`);
+                } else {
+                    console.log(`Saltando ${crypto}: vesPrice=${vesPrice}, usdPrice=${cryptoPricesUSD[crypto]}`);
+                }
+            });
+
+            // Si no hay elementos, mostrar mensaje
+            if (vesPriceGrid.children.length === 0) {
+                vesPriceGrid.innerHTML = '<div class="loading">Esperando datos de precios...</div>';
+            }
+        }
+
+        // Función para actualizar los inputs P2P con precios obtenidos
+        function updateP2PInputs() {
+            Object.entries(p2pPricesVES).forEach(([crypto, price]) => {
+                if (price > 0) {
+                    const inputId = crypto.toLowerCase() + 'Price';
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.value = price.toFixed(2);
+                    }
+                }
+            });
+        }
+
+        // Función para mostrar errores
+        function showError(message) {
+            const priceGrid = document.getElementById('priceGrid');
+            priceGrid.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function formatNumber(num, decimals = 2) {
+            return new Intl.NumberFormat('es-VE', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+
+        function calculateRates() {
+            const vesAmount = parseFloat(document.getElementById('vesAmount').value) || 0;
+            const btcPrice = parseFloat(document.getElementById('btcPrice').value) || 0;
+            const bnbPrice = parseFloat(document.getElementById('bnbPrice').value) || 0;
+            const ethPrice = parseFloat(document.getElementById('ethPrice').value) || 0;
+            const usdcPrice = parseFloat(document.getElementById('usdcPrice').value) || 0;
+
+            if (vesAmount <= 0) {
+                document.getElementById('results').innerHTML = 
+                    '<p style="text-align: center; color: #888;">Ingrese una cantidad en bolívares</p>';
+                return;
+            }
+
+            const results = [];
+
+            // Calcular para cada criptomoneda
+            if (btcPrice > 0) {
+                const btcAmount = vesAmount / btcPrice;
+                const usdValue = btcAmount * cryptoPricesUSD.BTC;
+                const impliedRate = vesAmount / usdValue;
+                results.push({
+                    crypto: 'Bitcoin',
+                    icon: '₿',
+                    iconClass: 'btc-icon',
+                    cryptoAmount: btcAmount,
+                    usdValue: usdValue,
+                    impliedRate: impliedRate,
+                    p2pPrice: btcPrice
+                });
+            }
+
+            if (bnbPrice > 0) {
+                const bnbAmount = vesAmount / bnbPrice;
+                const usdValue = bnbAmount * cryptoPricesUSD.BNB;
+                const impliedRate = vesAmount / usdValue;
+                results.push({
+                    crypto: 'BNB',
+                    icon: 'B',
+                    iconClass: 'bnb-icon',
+                    cryptoAmount: bnbAmount,
+                    usdValue: usdValue,
+                    impliedRate: impliedRate,
+                    p2pPrice: bnbPrice
+                });
+            }
+
+            if (ethPrice > 0) {
+                const ethAmount = vesAmount / ethPrice;
+                const usdValue = ethAmount * cryptoPricesUSD.ETH;
+                const impliedRate = vesAmount / usdValue;
+                results.push({
+                    crypto: 'Ethereum',
+                    icon: 'Ξ',
+                    iconClass: 'eth-icon',
+                    cryptoAmount: ethAmount,
+                    usdValue: usdValue,
+                    impliedRate: impliedRate,
+                    p2pPrice: ethPrice
+                });
+            }
+
+            if (usdcPrice > 0) {
+                const usdcAmount = vesAmount / usdcPrice;
+                const usdValue = usdcAmount * cryptoPricesUSD.USDC;
+                const impliedRate = vesAmount / usdValue;
+                results.push({
+                    crypto: 'USDC',
+                    icon: '$',
+                    iconClass: 'usdc-icon',
+                    cryptoAmount: usdcAmount,
+                    usdValue: usdValue,
+                    impliedRate: impliedRate,
+                    p2pPrice: usdcPrice
+                });
+            }
+
+            // Encontrar la mejor tasa (la más baja)
+            let bestRate = Infinity;
+            let bestIndex = -1;
+            results.forEach((result, index) => {
+                if (result.impliedRate < bestRate) {
+                    bestRate = result.impliedRate;
+                    bestIndex = index;
+                }
+            });
+
+            // Mostrar resultados
+            let html = '';
+            if (results.length === 0) {
+                html = '<p style="text-align: center; color: #888;">Ingrese al menos un precio P2P</p>';
+            } else {
+                results.forEach((result, index) => {
+                    const isBest = index === bestIndex;
+                    html += `
+                        <div class="result-card ${isBest ? 'best' : ''}">
+                            <div class="result-header">
+                                <div class="result-crypto">
+                                    <span class="crypto-icon ${result.iconClass}">${result.icon}</span>
+                                    ${result.crypto}
+                                </div>
+                                ${isBest ? '<span class="best-badge">Mejor Tasa</span>' : ''}
+                            </div>
+                            <div class="result-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Cantidad Cripto</div>
+                                    <div class="detail-value">${formatNumber(result.cryptoAmount, 6)}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Valor en USD</div>
+                                    <div class="detail-value">$${formatNumber(result.usdValue)}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Tasa VES/USD</div>
+                                    <div class="detail-value">${formatNumber(result.impliedRate)}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Precio P2P</div>
+                                    <div class="detail-value">${formatNumber(result.p2pPrice)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('results').innerHTML = html;
+        }
+
+        // Función para actualizar todos los precios
+        async function updateAllPrices() {
+            const refreshBtn = document.getElementById('refreshPrices');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '🔄 Actualizando...';
+            
+            try {
+                await Promise.all([
+                    fetchBinancePrices(),
+                    fetchP2PPrices()
+                ]);
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = '🔄 Actualizar';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('vesAmount').addEventListener('input', calculateRates);
+        document.getElementById('btcPrice').addEventListener('input', calculateRates);
+        document.getElementById('bnbPrice').addEventListener('input', calculateRates);
+        document.getElementById('ethPrice').addEventListener('input', calculateRates);
+        document.getElementById('usdcPrice').addEventListener('input', calculateRates);
+        document.getElementById('refreshPrices').addEventListener('click', updateAllPrices);
+
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Actualizar con datos reales de Binance
+            updateAllPrices();
+            
+            // Actualizar precios cada 30 segundos
+            setInterval(updateAllPrices, 30000);
+        });
+
+        // Información adicional
+        console.log('Calculadora VES → Cripto → USD con precios en tiempo real de Binance');
+    </script>
+</body>
+</html>
