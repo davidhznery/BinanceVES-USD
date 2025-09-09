@@ -443,7 +443,7 @@
             }
         }
 
-        // Función para obtener precio P2P usando nuestro backend
+        // Función para obtener precio P2P usando nuestro backend mejorado
         async function fetchP2PPriceForCrypto(crypto) {
             try {
                 console.log(`Obteniendo precio P2P para ${crypto} desde nuestro backend...`);
@@ -457,7 +457,7 @@
                 };
                 
                 const asset = assetMap[crypto] || crypto;
-                const url = `/api/p2p-prices?asset=${asset}&fiat=VES&tradeType=SELL`;
+                const url = `/api/p2p-prices?asset=${asset}&fiat=VES&tradeType=SELL&rows=10`;
                 
                 const response = await fetch(url);
                 
@@ -468,11 +468,12 @@
                 const data = await response.json();
                 console.log(`Response data for ${crypto}:`, data);
                 
-                if (data.success && data.averagePrice > 0) {
-                    p2pPricesVES[crypto] = data.averagePrice;
-                    console.log(`Precio P2P obtenido para ${crypto}: ${data.averagePrice} VES`);
+                if (data.success && data.statistics && data.statistics.averagePrice > 0) {
+                    p2pPricesVES[crypto] = data.statistics.averagePrice;
+                    console.log(`Precio P2P obtenido para ${crypto}: ${data.statistics.averagePrice} VES`);
+                    console.log(`Estadísticas: Min: ${data.statistics.minPrice}, Max: ${data.statistics.maxPrice}, Ofertas: ${data.statistics.totalOffers}`);
                 } else {
-                    console.log(`No se encontraron datos P2P para ${crypto}:`, data.error || 'Sin datos');
+                    console.log(`No se encontraron datos P2P para ${crypto}:`, data.message || data.error || 'Sin datos');
                 }
             } catch (error) {
                 console.error(`Error fetching P2P price for ${crypto}:`, error);
