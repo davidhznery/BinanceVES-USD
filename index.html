@@ -428,19 +428,17 @@
                 if (hasRealPrices) {
                     console.log('Precios P2P obtenidos exitosamente:', p2pPricesVES);
                     updateVESPriceDisplay();
+                    updateP2PInputs();
                 } else {
-                    console.log('No se pudieron obtener precios P2P, mostrando mensaje informativo');
-                    showP2PInfo();
+                    console.log('No se pudieron obtener precios P2P, mostrando interfaz manual');
+                    showManualInputInterface();
                 }
                 
-                updateP2PInputs();
                 calculateRates();
             } catch (error) {
                 console.error('Error fetching P2P prices:', error);
-                console.log('Mostrando mensaje informativo debido al error');
-                showP2PInfo();
-                setExamplePrices();
-                updateP2PInputs();
+                console.log('Mostrando interfaz manual debido al error');
+                showManualInputInterface();
                 calculateRates();
             }
         }
@@ -481,16 +479,34 @@
             }
         }
 
-        // Función para establecer precios de ejemplo cuando falla la API
-        function setExamplePrices() {
-            // Precios de ejemplo basados en valores típicos del mercado venezolano
-            p2pPricesVES = {
-                BTC: 3500000000,  // ~$100,000 USD
-                BNB: 25000000,    // ~$700 USD
-                ETH: 120000000,   // ~$3,500 USD
-                USDC: 40          // ~$1 USD
-            };
-            console.log('Precios de ejemplo establecidos:', p2pPricesVES);
+        // Función para mostrar interfaz de entrada manual
+        function showManualInputInterface() {
+            const vesPriceGrid = document.getElementById('vesPriceGrid');
+            vesPriceGrid.innerHTML = `
+                <div style="text-align: center; padding: 25px; background: rgba(255, 165, 0, 0.1); border-radius: 15px; border: 1px solid rgba(255, 165, 0, 0.3); margin-bottom: 20px;">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">⚠️</div>
+                    <h3 style="color: #ffa500; margin-bottom: 15px; font-size: 1.3rem;">Precios P2P No Disponibles</h3>
+                    <p style="color: #888; margin-bottom: 15px; line-height: 1.5;">
+                        No se pudieron obtener los precios P2P automáticamente desde Binance.
+                    </p>
+                    <p style="color: #888; margin-bottom: 20px; line-height: 1.5;">
+                        <strong>Por favor, ingresa manualmente los precios P2P actuales en los campos de abajo para calcular las tasas.</strong>
+                    </p>
+                    <div style="background: rgba(0, 0, 0, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <p style="color: #ffa500; font-weight: bold; margin-bottom: 10px;">💡 Cómo obtener precios P2P:</p>
+                        <div style="font-size: 0.9rem; color: #666; text-align: left;">
+                            <p>1. Ve a <a href="https://p2p.binance.com" target="_blank" style="color: #ffa500;">Binance P2P</a></p>
+                            <p>2. Selecciona la criptomoneda (BTC, BNB, ETH, USDC)</p>
+                            <p>3. Selecciona VES como moneda fiduciaria</p>
+                            <p>4. Copia el precio promedio de las ofertas</p>
+                            <p>5. Pégalo en el campo correspondiente abajo</p>
+                        </div>
+                    </div>
+                    <p style="color: #666; font-size: 0.85rem; font-style: italic;">
+                        💡 Los precios se actualizarán automáticamente cuando ingreses los valores
+                    </p>
+                </div>
+            `;
         }
 
         // Función para actualizar la visualización de precios USD
@@ -564,9 +580,9 @@
                 }
             });
 
-            // Si no hay precios reales, mostrar mensaje informativo
+            // Si no hay precios reales, mostrar interfaz manual
             if (!hasRealPrices) {
-                showP2PInfo();
+                showManualInputInterface();
             }
         }
 
@@ -589,34 +605,6 @@
             priceGrid.innerHTML = `<div class="error">${message}</div>`;
         }
 
-        // Función para mostrar información sobre precios P2P
-        function showP2PInfo() {
-            const vesPriceGrid = document.getElementById('vesPriceGrid');
-            vesPriceGrid.innerHTML = `
-                <div style="text-align: center; padding: 25px; background: rgba(255, 165, 0, 0.1); border-radius: 15px; border: 1px solid rgba(255, 165, 0, 0.3); margin-bottom: 20px;">
-                    <div style="font-size: 2rem; margin-bottom: 15px;">⚠️</div>
-                    <h3 style="color: #ffa500; margin-bottom: 15px; font-size: 1.3rem;">Precios P2P Requieren Entrada Manual</h3>
-                    <p style="color: #888; margin-bottom: 15px; line-height: 1.5;">
-                        Debido a restricciones de seguridad de Binance (CORS), los precios P2P no se pueden cargar automáticamente desde el navegador.
-                    </p>
-                    <p style="color: #888; margin-bottom: 20px; line-height: 1.5;">
-                        <strong>Por favor, ingresa manualmente los precios P2P actuales en los campos de abajo.</strong>
-                    </p>
-                    <div style="background: rgba(0, 0, 0, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                        <p style="color: #ffa500; font-weight: bold; margin-bottom: 10px;">💡 Precios de Referencia Típicos:</p>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.9rem; color: #666;">
-                            <div>₿ BTC: ~3,500,000,000 VES</div>
-                            <div>B BNB: ~25,000,000 VES</div>
-                            <div>Ξ ETH: ~120,000,000 VES</div>
-                            <div>$ USDC: ~40 VES</div>
-                        </div>
-                    </div>
-                    <p style="color: #666; font-size: 0.85rem; font-style: italic;">
-                        💡 Tip: Puedes consultar los precios P2P actuales en Binance P2P o grupos de trading locales
-                    </p>
-                </div>
-            `;
-        }
 
         function formatNumber(num, decimals = 2) {
             return new Intl.NumberFormat('es-VE', {
@@ -760,10 +748,10 @@
             refreshBtn.textContent = '🔄 Actualizando...';
             
             try {
-                // Solo actualizar precios USD de Binance
+                // Actualizar precios USD de Binance
                 await fetchBinancePrices();
-                // Los precios P2P se manejan manualmente
-                fetchP2PPrices();
+                // Intentar obtener precios P2P reales
+                await fetchP2PPrices();
             } finally {
                 refreshBtn.disabled = false;
                 refreshBtn.textContent = '🔄 Actualizar';
@@ -786,11 +774,8 @@
             // Intentar obtener precios P2P reales
             fetchP2PPrices();
             
-            // Actualizar precios cada 30 segundos
-            setInterval(() => {
-                fetchBinancePrices();
-                fetchP2PPrices();
-            }, 30000);
+            // Actualizar precios USD cada 30 segundos (P2P solo si el usuario quiere)
+            setInterval(fetchBinancePrices, 30000);
         });
 
         // Información adicional
