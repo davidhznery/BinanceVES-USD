@@ -4,9 +4,17 @@
     {
       "src": "index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "api/p2p-prices.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
